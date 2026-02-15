@@ -1,0 +1,11 @@
+.env
+.venv
+__pycache__
+*.pyc
+
+# Ignored directories
+app_demos/
+generated_shorts/
+output/
+ugc_daily/
+uploads/

@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteWall Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 20px rgba(99, 102, 241, 0.2)',
+                        'card': '0 2px 10px rgba(0,0,0,0.03)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .animate-in {
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen p-4 md:p-8 lg:p-12">
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- HEADER / SIDEBAR -->
+        <div class="lg:col-span-3 space-y-6">
+            <header class="mb-6">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="h-12 w-12 bg-gradient-to-br from-brand-600 to-indigo-800 rounded-xl flex items-center justify-center text-white shadow-glow ring-2 ring-white">
+                        <i class="ph-bold ph-note-pencil text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">NoteWall</h1>
+                        <span class="text-brand-600 font-bold text-[10px] tracking-widest uppercase">Viral Studio</span>
+                    </div>
+                </div>
+                <p class="text-xs font-medium text-slate-500 leading-relaxed">
+                    Personalized asset generator for NoteWall lock screen productivity.
+                </p>
+            </header>
+
+            <!-- TOOLS -->
+            <div class="space-y-4">
+                
+                <!-- Generator Widget -->
+                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 border border-white shadow-card hover:shadow-glow transition-shadow group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2 text-brand-700 font-bold text-sm">
+                            <i class="ph-duotone ph-sparkle text-lg"></i>
+                            <span>Quick Generator</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[11px] text-slate-500 mb-4 leading-normal">
+                        Generate fresh, personalized angles specifically for lock screen notes.
+                    </p>
+                    
+                    <button onclick="generateFreshHooks()" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-500/30 hover:shadow-brand-500/40 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-lightning"></i> Generate New Ideas
+                    </button>
+                    
+                    <div id="quickGenArea" class="mt-3 hidden space-y-2"></div>
+                </div>
+
+                 <!-- Shooting Guide Button -->
+                <button onclick="toggleGuide()" class="w-full bg-white/80 backdrop-blur rounded-2xl p-4 border border-white shadow-card hover:shadow-glow transition-all group text-left">
+                    <div class="flex items-center gap-3 text-slate-700 font-bold text-sm mb-1">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                            <i class="ph-duotone ph-video-camera text-lg"></i>
+                        </div>
+                        <span>UGC Shooting Guide</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-11">
+                        Acting tips for Shocked, Urgent, etc.
+                    </p>
+                </button>
+
+                <!-- Daily Check -->
+                <div class="bg-slate-900 rounded-2xl p-5 text-slate-300 shadow-xl relative overflow-hidden ring-1 ring-black/5">
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <h3 class="font-bold text-xs text-white uppercase tracking-wider">Daily Checklist</h3>
+                        <span class="text-[9px] font-mono bg-white/10 px-2 py-0.5 rounded text-white border border-white/10">TODAY</span>
+                    </div>
+                    
+                    <div class="space-y-3 relative z-10">
+                        <div class="flex items-center gap-3 text-xs font-medium text-white">
+                            <div class="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-white text-[10px]">
+                                <i class="ph-bold ph-check"></i>
+                            </div>
+                            <span class="opacity-90">Hooks Personalized</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-medium opacity-60">
+                            <div class="w-5 h-5 rounded bg-white/10 flex items-center justify-center text-[10px]">2</div>
+                            <span>Record 3 Clips</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-medium opacity-60">
+                            <div class="w-5 h-5 rounded bg-white/10 flex items-center justify-center text-[10px]">3</div>
+                            <span>Run Python Script</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative BG -->
+                    <div class="absolute -bottom-4 -right-4 w-20 h-20 bg-brand-500 rounded-full blur-2xl opacity-20"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="lg:col-span-9 flex flex-col h-full">
+            
+            <!-- Toolbar -->
+            <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        Viral Hooks Database
+                        <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide border border-brand-100 uppercase" id="hookCount">Loading</span>
+                    </h2>
+                    <p class="text-sm text-slate-500 font-medium">Curated text overlays optimized for view retention.</p>
+                    
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <button onclick="filterHooks('All')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border transition-all bg-slate-800 text-white border-slate-800" id="filter-All">All</button>
+                        <button onclick="filterHooks('Shocked')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all" id="filter-Shocked">Shocked</button>
+                        <button onclick="filterHooks('Frustrated')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all" id="filter-Frustrated">Frustrated</button>
+                        <button onclick="filterHooks('Skeptical')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all" id="filter-Skeptical">Skeptical</button>
+                        <button onclick="filterHooks('Urgent')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all" id="filter-Urgent">Urgent</button>
+                        <button onclick="filterHooks('Life Hack')" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all" id="filter-Life Hack">Life Hack</button>
+                        <button onclick="showUsedHooks()" class="filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-600 hover:border-slate-300 transition-all ml-auto flex items-center gap-1" id="filter-Used">
+                            <i class="ph-bold ph-archive"></i> Used
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="downloadHooks()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:border-brand-500 hover:text-brand-700 transition-all shadow-sm flex items-center gap-2 group">
+                        <i class="ph-bold ph-download-simple group-hover:scale-110 transition-transform"></i> Save JSON
+                    </button>
+                    <button onclick="copyHooks()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:border-brand-500 hover:text-brand-700 transition-all shadow-sm flex items-center gap-2 group">
+                        <i class="ph-bold ph-copy group-hover:scale-110 transition-transform"></i> Copy All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Generator Widget -->
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-900 rounded-2xl p-6 mb-8 text-white shadow-2xl relative overflow-hidden ring-1 ring-white/10 group">
+                <div class="absolute top-0 right-0 p-32 bg-indigo-500/20 blur-3xl rounded-full translate-x-10 -translate-y-10 group-hover:translate-x-0 transition-transform"></div>
+                
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="inline-flex items-center gap-2 bg-indigo-500/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-4 border border-indigo-400/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                            Video Studio
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Create a Viral Short</h3>
+                        <p class="text-indigo-200 text-sm mb-6 leading-relaxed">
+                            Upload your reaction video, pick an emotion, and let AI match it with a high-performing viral hook.
+                        </p>
+                        
+                        <div class="flex items-center gap-4 mb-4">
+                            <button type="button" onclick="switchMode('single')" id="modeSingle" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-500 text-white shadow-lg transition-all">Single Upload</button>
+                            <button type="button" onclick="switchMode('batch')" id="modeBatch" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800 transition-all">Batch Mode (3x)</button>
+                        </div>
+
+                        <!-- Single Upload Form -->
+                        <form id="uploadForm" onsubmit="handleUpload(event)" class="space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">1. Select Emotion</label>
+                                <div class="grid grid-cols-5 gap-2">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emotion" value="Shocked" class="peer sr-only" checked>
+                                        <div class="text-center py-2 rounded-lg bg-white/5 border border-white/10 peer-checked:bg-pink-500 peer-checked:border-pink-400 peer-checked:text-white hover:bg-white/10 transition-all text-[10px] font-bold">
+                                            😱 Shocked
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emotion" value="Frustrated" class="peer sr-only">
+                                        <div class="text-center py-2 rounded-lg bg-white/5 border border-white/10 peer-checked:bg-red-500 peer-checked:border-red-400 peer-checked:text-white hover:bg-white/10 transition-all text-[10px] font-bold">
+                                            😤 Frustr.
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emotion" value="Skeptical" class="peer sr-only">
+                                        <div class="text-center py-2 rounded-lg bg-white/5 border border-white/10 peer-checked:bg-orange-500 peer-checked:border-orange-400 peer-checked:text-white hover:bg-white/10 transition-all text-[10px] font-bold">
+                                            🤨 Skeptical
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emotion" value="Urgent" class="peer sr-only">
+                                        <div class="text-center py-2 rounded-lg bg-white/5 border border-white/10 peer-checked:bg-amber-500 peer-checked:border-amber-400 peer-checked:text-white hover:bg-white/10 transition-all text-[10px] font-bold">
+                                            ⚠️ Urgent
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emotion" value="Life Hack" class="peer sr-only">
+                                        <div class="text-center py-2 rounded-lg bg-white/5 border border-white/10 peer-checked:bg-emerald-500 peer-checked:border-emerald-400 peer-checked:text-white hover:bg-white/10 transition-all text-[10px] font-bold">
+                                            ⚡ Hack
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">2. Upload Clip</label>
+                                <div class="flex gap-2">
+                                    <label class="flex-1 cursor-pointer group/file">
+                                        <input type="file" name="video" accept="video/*" class="sr-only" onchange="updateFileName(this)">
+                                        <div class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-indigo-400/30 rounded-xl bg-indigo-900/40 hover:bg-indigo-900/60 hover:border-indigo-400 transition-all text-sm font-semibold text-indigo-200 group-hover/file:text-white relative overflow-hidden">
+                                            <i class="ph-bold ph-upload-simple"></i>
+                                            <span id="fileName">Select Video...</span>
+                                        </div>
+                                    </label>
+                                    <button type="submit" id="genBtn" class="bg-white text-indigo-900 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 active:scale-95 transition-all shadow-lg shadow-black/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span>Generate</span>
+                                        <i class="ph-bold ph-magic-wand"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Batch Upload Form (Hidden by default) -->
+                        <form id="batchForm" onsubmit="handleBatchUpload(event)" class="hidden space-y-4">
+                            <div class="space-y-3">
+                                <!-- Row 1 -->
+                                <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">1</span>
+                                        <select name="emotion1" class="bg-indigo-900/50 border border-white/20 rounded-lg text-xs text-white px-2 py-1 outline-none focus:border-indigo-400">
+                                            <option value="Shocked">😱 Shocked</option>
+                                            <option value="Frustrated">😤 Frustrated</option>
+                                            <option value="Skeptical">🤨 Skeptical</option>
+                                            <option value="Urgent">⚠️ Urgent</option>
+                                            <option value="Life Hack">⚡ Life Hack</option>
+                                        </select>
+                                    </div>
+                                    <label class="cursor-pointer block">
+                                        <input type="file" name="video1" accept="video/*" class="sr-only" onchange="updateBatchName(this, 1)">
+                                        <div class="w-full text-center py-2 border border-dashed border-white/20 rounded-lg text-xs text-indigo-300 hover:bg-white/5 transition-all" id="fileNameBatch1">
+                                            Select Video 1...
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Row 2 -->
+                                <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">2</span>
+                                        <select name="emotion2" class="bg-indigo-900/50 border border-white/20 rounded-lg text-xs text-white px-2 py-1 outline-none focus:border-indigo-400">
+                                            <option value="Shocked">😱 Shocked</option>
+                                            <option value="Frustrated">😤 Frustrated</option>
+                                            <option value="Skeptical">🤨 Skeptical</option>
+                                            <option value="Urgent">⚠️ Urgent</option>
+                                            <option value="Life Hack">⚡ Life Hack</option>
+                                        </select>
+                                    </div>
+                                    <label class="cursor-pointer block">
+                                        <input type="file" name="video2" accept="video/*" class="sr-only" onchange="updateBatchName(this, 2)">
+                                        <div class="w-full text-center py-2 border border-dashed border-white/20 rounded-lg text-xs text-indigo-300 hover:bg-white/5 transition-all" id="fileNameBatch2">
+                                            Select Video 2...
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Row 3 -->
+                                <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">3</span>
+                                        <select name="emotion3" class="bg-indigo-900/50 border border-white/20 rounded-lg text-xs text-white px-2 py-1 outline-none focus:border-indigo-400">
+                                            <option value="Shocked">😱 Shocked</option>
+                                            <option value="Frustrated">😤 Frustrated</option>
+                                            <option value="Skeptical">🤨 Skeptical</option>
+                                            <option value="Urgent">⚠️ Urgent</option>
+                                            <option value="Life Hack">⚡ Life Hack</option>
+                                        </select>
+                                    </div>
+                                    <label class="cursor-pointer block">
+                                        <input type="file" name="video3" accept="video/*" class="sr-only" onchange="updateBatchName(this, 3)">
+                                        <div class="w-full text-center py-2 border border-dashed border-white/20 rounded-lg text-xs text-indigo-300 hover:bg-white/5 transition-all" id="fileNameBatch3">
+                                            Select Video 3...
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="batchGenBtn" class="w-full bg-gradient-to-r from-brand-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-glow active:scale-95 transition-all flex items-center justify-center gap-2">
+                                <span>Generate Batch (3x)</span>
+                                <i class="ph-bold ph-stack"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Preview Area -->
+                    <div class="relative w-[240px] aspect-[9/16] mx-auto bg-black rounded-xl border border-white/10 flex items-center justify-center backdrop-blur-sm overflow-hidden shadow-2xl" id="previewArea">
+                         <div class="text-center space-y-2 opacity-50" id="previewPlaceholder">
+                            <i class="ph-duotone ph-film-strip text-4xl"></i>
+                            <p class="text-xs font-medium">Result</p>
+                        </div>
+                        
+                        <video id="resultVideo" controls class="hidden w-full h-full object-cover"></video>
+                        
+                        <!-- Batch Success View -->
+                        <div id="batchSuccess" class="hidden absolute inset-0 bg-indigo-900/90 flex flex-col items-center justify-center p-4 text-center">
+                            <i class="ph-duotone ph-check-circle text-4xl text-green-400 mb-2"></i>
+                            <h4 class="font-bold text-lg mb-1">Batch Ready!</h4>
+                            <p class="text-[10px] text-indigo-200 mb-4">3 videos generated successfully.</p>
+                            <a id="batchDownloadLink" href="#" class="px-4 py-2 bg-white text-indigo-900 rounded-lg text-xs font-bold flex items-center gap-2 hover:scale-105 transition-transform">
+                                <i class="ph-bold ph-download-simple"></i> Download All (ZIP)
+                            </a>
+                        </div>
+
+                        <div id="processingIndicator" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-3 backdrop-blur-sm z-20">
+                            <i class="ph-duotone ph-spinner animate-spin text-3xl text-white"></i>
+                            <p class="text-[10px] font-bold text-white tracking-widest uppercase">Processing...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="relative group mb-6 shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                    <i class="ph-bold ph-plus text-slate-400 group-focus-within:text-brand-600 transition-colors"></i>
+                </div>
+                <input type="text" id="newHookInput" placeholder="Write a custom personalized hook..." 
+                    class="w-full pl-12 pr-28 py-4 bg-white border-0 ring-1 ring-slate-200 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 shadow-sm transition-all placeholder-slate-400">
+                <button onclick="addHook()" class="absolute right-2 top-2 bottom-2 bg-slate-900 hover:bg-brand-600 text-white px-6 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95">
+                    ADD
+                </button>
+            </div>
+
+            <!-- Hooks Grid -->
+            <div id="hooksList" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-12">
+                <!-- Populated by JS -->
+                <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
+                    <i class="ph-duotone ph-spinner animate-spin text-3xl mb-3"></i>
+                    <span class="text-xs font-medium">Loading database...</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Guide Modal -->
+    <div id="guideModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleGuide()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in">
+            <div class="bg-indigo-900 p-5 flex justify-between items-center border-b border-indigo-800">
+                <div>
+                    <h3 class="font-bold text-white text-lg flex items-center gap-2">
+                        <i class="ph-duotone ph-film-strip text-brand-400"></i>
+                         Mastering the Reaction
+                    </h3>
+                    <p class="text-indigo-200 text-xs">Actor's notes for authentic UGC performance</p>
+                </div>
+                <button onclick="toggleGuide()" class="text-indigo-300 hover:text-white transition-colors bg-white/10 p-1.5 rounded-lg"><i class="ph-bold ph-x"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto bg-slate-50">
+                
+                <!-- Shocked -->
+                <div class="flex gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-2xl shrink-0 shadow-inner">😱</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <h4 class="font-bold text-slate-800">Shocked <span class="text-slate-400 font-medium text-xs">(Disbelief)</span></h4>
+                            <span class="text-[10px] font-bold bg-pink-50 text-pink-600 px-2 py-1 rounded-md uppercase tracking-wide">The "Wait, What?"</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">👀 Face & Body</p>
+                                <p class="leading-relaxed">Eyes go wide instantly. Mouth drops slightly (don't overdo the "O"). Shoulders stiffen or lean back as if pushed by the surprise.</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">💭 Inner Monologue</p>
+                                <p class="leading-relaxed italic text-slate-500">"Wait... have I been doing it wrong my whole life? Is this actually real?"</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-50 flex items-center gap-2 text-[11px]">
+                            <span class="text-green-600 font-bold"><i class="ph-bold ph-check"></i> Do:</span> <span>Freeze for a split second.</span>
+                            <span class="text-red-500 font-bold ml-2"><i class="ph-bold ph-x"></i> Don't:</span> <span>Look like a cartoon character. Keep it grounded.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frustrated -->
+                <div class="flex gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-2xl shrink-0 shadow-inner">😤</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <h4 class="font-bold text-slate-800">Frustrated <span class="text-slate-400 font-medium text-xs">(Pain Point)</span></h4>
+                            <span class="text-[10px] font-bold bg-red-50 text-red-600 px-2 py-1 rounded-md uppercase tracking-wide">The "I'm Done"</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">👀 Face & Body</p>
+                                <p class="leading-relaxed">Furrowed brows, slight squint. Cover face with hand (facepalm) or rub temples. Deep audible exhale (sigh). Look away from camera then back.</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">💭 Inner Monologue</p>
+                                <p class="leading-relaxed italic text-slate-500">"I am so sick of forgetting my deadlines. Why is this so hard?"</p>
+                            </div>
+                        </div>
+                         <div class="pt-2 border-t border-slate-50 flex items-center gap-2 text-[11px]">
+                            <span class="text-green-600 font-bold"><i class="ph-bold ph-check"></i> Do:</span> <span>Use your hands to show stress.</span>
+                            <span class="text-red-500 font-bold ml-2"><i class="ph-bold ph-x"></i> Don't:</span> <span>Look angry/scary. Look <u>annoyed</u>.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skeptical -->
+                <div class="flex gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shrink-0 shadow-inner">🤨</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <h4 class="font-bold text-slate-800">Skeptical <span class="text-slate-400 font-medium text-xs">(Doubting)</span></h4>
+                            <span class="text-[10px] font-bold bg-orange-50 text-orange-600 px-2 py-1 rounded-md uppercase tracking-wide">The "Yeah Right"</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">👀 Face & Body</p>
+                                <p class="leading-relaxed">One eyebrow raised. Head tilted to the side. Arms crossed or hand lightly on chin. Eyes narrowed.</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">💭 Inner Monologue</p>
+                                <p class="leading-relaxed italic text-slate-500">"Another productivity app? Like this is actually going to work..."</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-50 flex items-center gap-2 text-[11px]">
+                            <span class="text-green-600 font-bold"><i class="ph-bold ph-check"></i> Do:</span> <span>Transition to "realization" at the end.</span>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Urgent -->
+                <div class="flex gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0 shadow-inner">⚠️</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <h4 class="font-bold text-slate-800">Urgent <span class="text-slate-400 font-medium text-xs">(FOMO)</span></h4>
+                            <span class="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-1 rounded-md uppercase tracking-wide">The "Listen Now"</span>
+                        </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">👀 Face & Body</p>
+                                <p class="leading-relaxed">Intense eye contact. Lean IN towards the camera lens. Fast, sharp movements. Pointing finger at the viewer.</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">💭 Inner Monologue</p>
+                                <p class="leading-relaxed italic text-slate-500">"Stop scrolling! You are going to fail if you don't hear this."</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-50 flex items-center gap-2 text-[11px]">
+                            <span class="text-green-600 font-bold"><i class="ph-bold ph-check"></i> Do:</span> <span>Keep energy high. Speak (mouth) faster.</span>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Life Hack -->
+                <div class="flex gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl shrink-0 shadow-inner">⚡</div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <h4 class="font-bold text-slate-800">Life Hack <span class="text-slate-400 font-medium text-xs">(Smug/Smart)</span></h4>
+                            <span class="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md uppercase tracking-wide">The "Cheat Code"</span>
+                        </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">👀 Face & Body</p>
+                                <p class="leading-relaxed">Confident smirk. Relaxed eyes. "Come here" gesture or nodding knowingly. Shrugging like "it's easy".</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900 mb-1">💭 Inner Monologue</p>
+                                <p class="leading-relaxed italic text-slate-500">"I just found the ultimate cheat code and I'm letting you in on it."</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-50 flex items-center gap-2 text-[11px]">
+                            <span class="text-green-600 font-bold"><i class="ph-bold ph-check"></i> Do:</span> <span>Project confidence, not arrogance.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bg-white p-4 border-t border-slate-100 text-center shadow-[0_-5px_15px_rgba(0,0,0,0.02)] relative z-10">
+                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">PRO TIP</p>
+                 <p class="text-xs text-slate-500 mt-1">Keep reaction clips under <span class="font-bold text-slate-800">3 seconds</span>. Start the emotion <i>before</i> hitting record.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let hooks = [];
+        let currentFilter = 'All';
+        let currentView = 'active'; // 'active' or 'used'
+        
+        const generatorTemplates = [
+            "Stop cluttering your widgets. Do THIS on your wallpaper instead.",
+            "POV: You literally can't forget because it's baked into your lock screen.",
+            "Why did nobody tell me my wallpaper could be a to-do list??",
+            "This simple wallpaper hack saved my GPA this semester.",
+            "My ADHD brain finally found the cheat code: NoteWall.",
+            "Widgets are so 2023. NoteWall is the future.",
+            "The only productivity app tailored for your lock screen.",
+            "How I tricked my brain into doing homework using my wallpaper.",
+            "Your wallpaper is wasted space. Make it productive.",
+            "Finally, a to-do list you can't ignore (it's your wallpaper)."
+        ];
+
+        async function loadHooks() {
+            try {
+                currentView = 'active';
+                const res = await fetch('top_hooks.json?t=' + Date.now());
+                if (!res.ok) throw new Error("Failed");
+                const raw = await res.json();
+                // Ensure backward compatibility
+                hooks = raw.map(h => typeof h === 'string' ? {text: h, emotion: 'General'} : h);
+                updateFilterButtons();
+                renderHooks();
+            } catch (e) {
+                console.error(e);
+                hooks = generatorTemplates.map(h => ({text: h, emotion: 'General'})); // Fallback
+                renderHooks();
+            }
+        }
+
+        async function showUsedHooks() {
+            try {
+                const res = await fetch('used_hooks.json?t=' + Date.now());
+                if (!res.ok) throw new Error("Failed");
+                const raw = await res.json();
+                hooks = raw.map(h => typeof h === 'string' ? {text: h, emotion: 'General'} : h);
+                
+                currentView = 'used';
+                currentFilter = 'All'; // Reset filter when entering used view
+                updateFilterButtons();
+                renderHooks();
+            } catch (e) {
+                console.error(e);
+                alert("Could not load used hooks history.");
+            }
+        }
+
+        function filterHooks(category) {
+            // If in used view, pressing a category filter takes you back to active hooks
+            if (currentView === 'used') {
+                currentFilter = category;
+                loadHooks();
+            } else {
+                currentFilter = category;
+                updateFilterButtons();
+                renderHooks();
+            }
+        }
+
+        function updateFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                // Default style
+                btn.className = "filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all";
+            });
+
+            const usedBtn = document.getElementById('filter-Used');
+            
+            if (currentView === 'used') {
+                // Highlight Used button
+                if(usedBtn) usedBtn.className = "filter-btn px-3 py-1 rounded-full text-[10px] font-bold border-slate-800 bg-slate-800 text-white transition-all flex items-center gap-1 ml-auto";
+            } else {
+                // Highlight specific active filter
+                const activeBtn = document.getElementById(`filter-${currentFilter}`);
+                if(activeBtn) {
+                     const colors = {
+                        'All': 'bg-slate-800 text-white border-slate-800',
+                        'Shocked': 'bg-pink-100 text-pink-700 border-pink-200',
+                        'Frustrated': 'bg-red-100 text-red-700 border-red-200',
+                        'Skeptical': 'bg-orange-100 text-orange-700 border-orange-200',
+                        'Urgent': 'bg-amber-100 text-amber-700 border-amber-200',
+                        'Life Hack': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                        'General': 'bg-slate-100 text-slate-700 border-slate-200'
+                     };
+                     activeBtn.className = `filter-btn px-3 py-1 rounded-full text-[10px] font-bold transition-all ${colors[currentFilter] || colors['All']}`;
+                }
+                // Reset Used button style
+                if(usedBtn) usedBtn.className = "filter-btn px-3 py-1 rounded-full text-[10px] font-bold border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-600 hover:border-slate-300 transition-all ml-auto flex items-center gap-1";
+            }
+        }
+
+        function renderHooks() {
+            const list = document.getElementById('hooksList');
+            
+            // Filter
+            const visibleHooks = currentFilter === 'All' 
+                ? hooks 
+                : hooks.filter(h => (h.emotion || 'General') === currentFilter);
+                
+            const titlePrefix = currentView === 'used' ? 'USED' : 'ACTIVE';
+            document.getElementById('hookCount').textContent = `${visibleHooks.length} ${titlePrefix} HOOKS`;
+            
+            // Adjust header depending on view
+            if (currentView === 'used') {
+                document.getElementById('hookCount').classList.add('bg-slate-200', 'text-slate-600', 'border-slate-300');
+                document.getElementById('hookCount').classList.remove('bg-brand-50', 'text-brand-700', 'border-brand-100');
+            } else {
+                document.getElementById('hookCount').classList.remove('bg-slate-200', 'text-slate-600', 'border-slate-300');
+                document.getElementById('hookCount').classList.add('bg-brand-50', 'text-brand-700', 'border-brand-100');
+            }
+            
+            if (visibleHooks.length === 0) {
+                list.innerHTML = `
+                    <div class="col-span-full py-16 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                         <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <i class="ph-duotone ph-funnel-x text-3xl"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium text-sm">No ${currentView} hooks found.</p>
+                        ${currentView === 'used' ? '' : `<button onclick="filterHooks('All')" class="mt-4 text-brand-600 text-xs font-bold hover:underline">Clear Filter</button>`}
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = visibleHooks.map((hook, i) => {
+                const text = typeof hook === 'string' ? hook : hook.text;
+                const emotion = typeof hook === 'string' ? 'General' : (hook.emotion || 'Life Hack');
+                
+                // Colors for badges
+                const badgeColors = {
+                    'Shocked': 'bg-pink-100 text-pink-700 border-pink-200',
+                    'Frustrated': 'bg-red-100 text-red-700 border-red-200',
+                    'Skeptical': 'bg-orange-100 text-orange-700 border-orange-200',
+                    'Urgent': 'bg-amber-100 text-amber-700 border-amber-200',
+                    'Life Hack': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    'General': 'bg-slate-100 text-slate-700 border-slate-200'
+                };
+                
+                // If in used view, desaturate badges slightly or keep them? Keep them is better for context.
+                let badgeClass = badgeColors[emotion] || badgeColors['General'];
+                if(currentView === 'used') {
+                     // Maybe add grayscale or something? 
+                     // Let's just keep it but maybe change the background of card
+                }
+                
+                // Original index for deletion
+                const originalIndex = hooks.indexOf(hook);
+
+                return `
+                <div class="hook-card ${currentView === 'used' ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-100'} p-4 rounded-xl border flex gap-4 items-start group relative animate-in hover:shadow-md transition-shadow cursor-pointer" 
+                     style="animation-delay: ${Math.min(i * 0.02, 0.5)}s" 
+                     onclick="copyText('${escapeHtml(text)}', this)">
+                    
+                    <span class="text-[10px] font-mono ${currentView === 'used' ? 'text-slate-400' : 'text-slate-300'} font-bold pt-1 select-none">#${(i+1).toString().padStart(2, '0')}</span>
+                    
+                    <div class="flex-1 pr-8">
+                        <div class="mb-2">
+                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${badgeClass} uppercase tracking-wider">${emotion}</span>
+                             ${currentView === 'used' ? '<span class="ml-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-500 border border-slate-300 uppercase tracking-wider">USED</span>' : ''}
+                        </div>
+                        <p class="text-sm ${currentView === 'used' ? 'text-slate-500' : 'text-slate-800'} font-semibold leading-relaxed tracking-tight relative -top-0.5">"${escapeHtml(text)}"</p>
+                    </div>
+
+                    ${currentView === 'active' ? `
+                    <div class="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white pl-2">
+                        <button onclick="event.stopPropagation(); deleteHook(${originalIndex})" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </div>` : ''}
+                </div>
+            `;
+            }).join('');
+        }
+        
+        function copyText(text, el) {
+            navigator.clipboard.writeText(text);
+            
+            // Visual feedback
+            const originalBorder = el.className;
+            el.classList.add('ring-2', 'ring-green-500', 'border-transparent');
+            
+            setTimeout(() => {
+                el.classList.remove('ring-2', 'ring-green-500', 'border-transparent');
+            }, 600);
+        }
+
+        function switchMode(mode) {
+            const singleBtn = document.getElementById('modeSingle');
+            const batchBtn = document.getElementById('modeBatch');
+            const singleForm = document.getElementById('uploadForm');
+            const batchForm = document.getElementById('batchForm');
+            
+            if (mode === 'single') {
+                singleBtn.className = "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-500 text-white shadow-lg transition-all";
+                batchBtn.className = "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800 transition-all";
+                singleForm.classList.remove('hidden');
+                batchForm.classList.add('hidden');
+            } else {
+                batchBtn.className = "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-500 text-white shadow-lg transition-all";
+                singleBtn.className = "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800 transition-all";
+                batchForm.classList.remove('hidden');
+                singleForm.classList.add('hidden');
+            }
+        }
+
+        function updateBatchName(input, index) {
+             const name = input.files[0]?.name || `Select Video ${index}...`;
+             document.getElementById(`fileNameBatch${index}`).textContent = name.length > 20 ? name.substring(0, 17) + '...' : name;
+             document.getElementById(`fileNameBatch${index}`).classList.add('text-white', 'bg-white/10');
+        }
+
+        function generateFreshHooks() {
+            const area = document.getElementById('quickGenArea');
+            area.classList.remove('hidden');
+            
+            const shuffled = generatorTemplates.sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 3);
+            
+            area.innerHTML = `
+                <div class="text-[9px] font-bold text-brand-400 uppercase tracking-widest pl-1 mt-2 mb-1">Generated Ideas</div>
+                ${selected.map(idea => `
+                    <div class="bg-brand-50/50 p-3 rounded-xl border border-brand-100 text-xs flex flex-col gap-2 group hover:bg-brand-50 transition-colors">
+                        <p class="text-slate-700 font-semibold text-[11px] leading-relaxed">"${idea}"</p>
+                        <button onclick="addGeneratedHook('${idea.replace(/'/g, "\\'")}')" class="self-end text-[9px] font-bold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-sm">
+                            <i class="ph-bold ph-plus"></i> ADD
+                        </button>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function addGeneratedHook(text) {
+            hooks.unshift({text: text, emotion: 'General'});
+            renderHooks();
+        }
+
+        function addHook() {
+            const input = document.getElementById('newHookInput');
+            const val = input.value.trim();
+            if (val) {
+                hooks.unshift({text: val, emotion: 'General'});
+                renderHooks();
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        async function handleUpload(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const btn = document.getElementById('genBtn');
+            const indicator = document.getElementById('processingIndicator');
+            const placeholder = document.getElementById('previewPlaceholder');
+            const resultVideo = document.getElementById('resultVideo');
+            const batchSuccess = document.getElementById('batchSuccess');
+            
+            // Validate
+            if (!formData.get('video').size) {
+                 alert('Please select a video file first.');
+                 return;
+            }
+
+            // Reset UI
+            btn.disabled = true;
+            batchSuccess.classList.add('hidden');
+            indicator.classList.remove('hidden');
+            resultVideo.classList.add('hidden');
+            resultVideo.src = '';
+            placeholder.classList.add('hidden');
+            
+            try {
+                const res = await fetch('/upload-video', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!res.ok) {
+                     const err = await res.json();
+                     throw new Error(err.error || 'Upload failed');
+                }
+                
+                const data = await res.json();
+                
+                // Show result
+                resultVideo.src = data.video_url;
+                resultVideo.classList.remove('hidden');
+                
+                // Add Download link helper
+                const dlBtn = document.createElement('a');
+                dlBtn.href = data.video_url;
+                dlBtn.download = `hook_${data.emotion}.mp4`;
+                dlBtn.className = "absolute bottom-6 left-1/2 -translate-x-1/2 bg-white text-black px-5 py-2.5 rounded-full text-xs font-bold shadow-xl flex items-center gap-2 hover:scale-110 active:scale-95 transition-all z-30 border-2 border-transparent hover:border-black/5";
+                dlBtn.innerHTML = '<i class="ph-bold ph-download-simple"></i> Download';
+                
+                // Clear old button if any
+                const old = document.getElementById('dlBtnOverlay');
+                if(old) old.remove();
+                
+                dlBtn.id = 'dlBtnOverlay';
+                document.getElementById('previewArea').appendChild(dlBtn);
+                
+            } catch (err) {
+                alert('Error: ' + err.message);
+                placeholder.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                indicator.classList.add('hidden');
+            }
+        }
+
+        async function handleBatchUpload(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const btn = document.getElementById('batchGenBtn');
+            const indicator = document.getElementById('processingIndicator');
+            const placeholder = document.getElementById('previewPlaceholder');
+            const resultVideo = document.getElementById('resultVideo');
+            const batchSuccess = document.getElementById('batchSuccess');
+
+            // Validate checks if at least one video is selected
+            if (!formData.get('video1').size && !formData.get('video2').size && !formData.get('video3').size) {
+                alert("Please select at least one video.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Processing Batch...</span><i class="ph-bold ph-spinner animate-spin"></i>';
+            indicator.classList.remove('hidden');
+            resultVideo.classList.add('hidden');
+            batchSuccess.classList.add('hidden');
+            placeholder.classList.add('hidden');
+
+            try {
+                const res = await fetch('/batch-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Batch upload failed');
+                }
+
+                // If returns a ZIP file (blob)
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                
+                // Show Success State
+                batchSuccess.classList.remove('hidden');
+                
+                const dlLink = document.getElementById('batchDownloadLink');
+                dlLink.href = url;
+                dlLink.download = `NoteWall_Batch_${new Date().getTime()}.zip`;
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                placeholder.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Generate Batch (3x)</span><i class="ph-bold ph-stack"></i>';
+                indicator.classList.add('hidden');
+            }
+        }
+        
+        function updateFileName(input) {
+             const name = input.files[0]?.name || 'Select Video...';
+             document.getElementById('fileName').textContent = name.length > 20 ? name.substring(0, 17) + '...' : name;
+        }
+
+        function deleteHook(i) {
+            if(confirm("Remove this hook from database?")) {
+                hooks.splice(i, 1);
+                renderHooks();
+            }
+        }
+
+        function downloadHooks() {
+            const blob = new Blob([JSON.stringify(hooks, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'top_hooks.json';
+            a.click();
+        }
+        
+        function copyHooks() {
+            navigator.clipboard.writeText(JSON.stringify(hooks, null, 2));
+            alert("Database copied to clipboard");
+        }
+
+        function toggleGuide() {
+            const guide = document.getElementById('guideModal');
+            guide.classList.toggle('hidden');
+        }
+
+        function escapeHtml(text) {
+             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+        
+        document.getElementById('newHookInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') addHook();
+        });
+
+        loadHooks();
+    </script>
+</body>
+</html>
